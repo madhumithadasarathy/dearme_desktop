@@ -1,30 +1,27 @@
-import React, { useState } from 'react';
-import { Heart } from 'lucide-react';
+import React from 'react';
+import { MemoryRouter, Routes, Route } from 'react-router-dom';
+import Layout from './components/Layout';
+import Home from './pages/Home';
+import Routines from './pages/Routines';
+import SugarLog from './pages/SugarLog';
+import Journal from './pages/Journal';
+import Wellness from './pages/Wellness';
 
 function App() {
-  const [loading, setLoading] = useState(true);
-
-  // Simulate a quick loading state to match aesthetic
-  React.useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, []);
-
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-blush-pink">
-      <div className="p-8 text-center bg-white/40 backdrop-blur-sm rounded-3xl shadow-sm border border-white/50">
-        <h1 className="text-4xl font-semibold mb-4 text-pink-500 tracking-wide flex items-center justify-center gap-2">
-          Dear Me <Heart className="text-pink-500 fill-pink-500" />
-        </h1>
-        {loading ? (
-          <p className="text-gray-600 italic">Your planner is loading...</p>
-        ) : (
-          <p className="text-gray-600">Welcome to your gentle space. 🌸</p>
-        )}
-      </div>
-    </div>
+    // We use MemoryRouter for Electron apps to prevent URL browser bar issues.
+    // If it were a pure web app, BrowserRouter would be used.
+    <MemoryRouter>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<Home />} />
+          <Route path="routines" element={<Routines />} />
+          <Route path="sugar-log" element={<SugarLog />} />
+          <Route path="journal" element={<Journal />} />
+          <Route path="wellness" element={<Wellness />} />
+        </Route>
+      </Routes>
+    </MemoryRouter>
   );
 }
 
