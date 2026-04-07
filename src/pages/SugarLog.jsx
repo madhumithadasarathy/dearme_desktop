@@ -1,52 +1,102 @@
-import React from 'react';
-import PlannerCard from '../components/PlannerCard';
+import React, { useState } from 'react';
 import SectionHeader from '../components/SectionHeader';
-import Button from '../components/Button';
-import InputField from '../components/InputField';
+import { useData } from '../contexts/DataContext';
 
 export default function SugarLog() {
+  const { sugarLogs, addSugarLog, getSugarColorCategory } = useData();
+  const [newValue, setNewValue] = useState('');
+  const [slot, setSlot] = useState('Before Breakfast');
+  
+  const today = new Date().toISOString().split('T')[0];
+  const todaysLogs = sugarLogs.filter(log => log.date === today);
+
+  const timeSlots = [
+    'Before Breakfast', 'After Breakfast',
+    'Before Lunch', 'After Lunch',
+    'Before Dinner', 'After Dinner'
+  ];
+
+  const handleAdd = () => {
+    if (!newValue || isNaN(newValue)) return;
+    addSugarLog({
+      date: today,
+      timeSlot: slot,
+      value: parseInt(newValue),
+      notes: ''
+    });
+    setNewValue('');
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <SectionHeader 
-        title="Sugar Tracking" 
-        subtitle="Keep an eye on what matters."
+        title="Sugar Log" 
+        subtitle="Track your sweet balance throughout the day."
       />
       
-      <PlannerCard className="bg-white/50 mb-6">
-        <div className="flex items-end gap-4">
-          <InputField label="Enter Reading (mg/dL)" type="number" placeholder="e.g. 110" />
-          <Button className="shrink-0 whitespace-nowrap">Log Reading</Button>
+      <div className="bg-white/60 backdrop-blur-md rounded-[2rem] p-8 shadow-[0_10px_40px_rgba(133,14,53,0.05)] border border-white/50">
+        <h3 className="font-serif text-xl font-bold mb-4 text-burgundy">Add New Reading</h3>
+        <div className="flex gap-4 mb-2">
+          <select 
+            value={slot}
+            onChange={(e) => setSlot(e.target.value)}
+            className="flex-1 rounded-xl border-white/60 bg-white/50 px-4 py-2 outline-none focus:ring-2 focus:ring-theme-pink shadow-sm text-burgundy font-medium"
+          >
+            {timeSlots.map(s => <option key={s} value={s}>{s}</option>)}
+          </select>
+          <input 
+            type="number"
+            value={newValue}
+            onChange={(e) => setNewValue(e.target.value)}
+            placeholder="Level (mg/dL)"
+            className="w-32 rounded-xl border-white/60 bg-white/50 px-4 py-2 outline-none focus:ring-2 focus:ring-theme-pink shadow-sm text-burgundy font-medium"
+          />
+          <button onClick={handleAdd} className="px-6 py-2 bg-theme-dark text-white font-bold rounded-xl shadow-sm hover:scale-105 transition-transform">
+            Log
+          </button>
         </div>
-      </PlannerCard>
+      </div>
 
-      <PlannerCard className="p-0 overflow-hidden">
-        <table className="w-full text-left font-sans">
-          <thead>
-            <tr className="bg-soft-rose/30 text-burgundy font-medium">
-              <th className="py-4 px-6 rounded-tl-planner">Date & Time</th>
-              <th className="py-4 px-6">Reading</th>
-              <th className="py-4 px-6 rounded-tr-planner">Status</th>
-            </tr>
-          </thead>
-          <tbody className="text-muted-rose">
-            <tr className="border-b border-blush-pink">
-              <td className="py-4 px-6">Today, 08:30 AM</td>
-              <td className="py-4 px-6 font-semibold text-burgundy">95 mg/dL</td>
-              <td className="py-4 px-6"><span className="inline-block px-3 py-1 bg-soft-green text-green-900 text-xs rounded-full font-bold">Normal</span></td>
-            </tr>
-            <tr className="border-b border-blush-pink">
-              <td className="py-4 px-6">Yesterday, 08:00 PM</td>
-              <td className="py-4 px-6 font-semibold text-burgundy">142 mg/dL</td>
-              <td className="py-4 px-6"><span className="inline-block px-3 py-1 bg-soft-yellow text-yellow-900 text-xs rounded-full font-bold">Elevated</span></td>
-            </tr>
-            <tr>
-              <td className="py-4 px-6">Yesterday, 07:15 AM</td>
-              <td className="py-4 px-6 font-semibold text-burgundy">105 mg/dL</td>
-              <td className="py-4 px-6"><span className="inline-block px-3 py-1 bg-soft-green text-green-900 text-xs rounded-full font-bold">Normal</span></td>
-            </tr>
-          </tbody>
-        </table>
-      </PlannerCard>
+      <div className="bg-white/40 backdrop-blur-md rounded-[2rem] p-8 shadow-[0_10px_40px_rgba(133,14,53,0.05)] border border-white/50">
+        <h3 className="font-serif text-xl font-bold mb-6 text-burgundy">Today's Readings</h3>
+        
+        {todaysLogs.length === 0 ? (
+          <p className="text-burgundy/50 text-center py-4 font-medium">No readings logged today yet.</p>
+        ) : (
+          <div className="overflow-hidden rounded-2xl border border-white">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-white/60 text-burgundy">
+                  <th className="p-4 font-bold border-b border-white">Time Slot</th>
+                  <th className="p-4 font-bold border-b border-white">Level</th>
+                  <th className="p-4 font-bold border-b border-white">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {todaysLogs.map((log) => {
+                  const status = getSugarColorCategory(log.value);
+                  const statusColors = {
+                    'Green': 'bg-green-100 text-green-700 border-green-200',
+                    'Yellow': 'bg-yellow-100 text-yellow-700 border-yellow-200',
+                    'Red': 'bg-theme-pink/20 text-theme-dark border-theme-pink/30'
+                  };
+                  return (
+                    <tr key={log.id} className="border-b border-white hover:bg-white/30 transition-colors">
+                      <td className="p-4 font-medium text-burgundy/80">{log.timeSlot}</td>
+                      <td className="p-4 font-bold text-burgundy">{log.value}</td>
+                      <td className="p-4">
+                        <span className={`px-3 py-1 rounded-full text-xs font-bold border ${statusColors[status]}`}>
+                          {status === 'Green' ? 'Good' : status === 'Yellow' ? 'Elevated' : 'High/Low'}
+                        </span>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -1,8 +1,10 @@
 import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { Home, CheckSquare, Activity, BookHeart, HeartPulse } from 'lucide-react';
+import { useData } from '../contexts/DataContext';
 
 export default function Layout() {
+  const { user } = useData();
   const navItems = [
     { to: '/', label: 'Home', icon: Home },
     { to: '/routines', label: 'Routines', icon: CheckSquare },
@@ -60,7 +62,7 @@ export default function Layout() {
         
         {/* Top Header */}
         <header className="h-24 px-10 flex items-center justify-between shrink-0 border-b border-white/10">
-          <h2 className="text-3xl font-serif font-bold text-burgundy drop-shadow-sm">Hello Beautiful! 🌸</h2>
+          <h2 className="text-3xl font-serif font-bold text-burgundy drop-shadow-sm">Hello {user.name}! 🌸</h2>
           
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-4">
@@ -68,7 +70,7 @@ export default function Layout() {
                 <p className="text-sm font-bold text-burgundy leading-none">Me</p>
                 <p className="text-xs text-burgundy/60 font-medium">Gentle Explorer</p>
               </div>
-              <div className="w-11 h-11 rounded-full bg-gradient-to-br from-dusty-rose to-theme-pink shadow-md flex items-center justify-center text-white font-bold text-lg">M</div>
+              <div className="w-11 h-11 rounded-full bg-gradient-to-br from-dusty-rose to-theme-pink shadow-md flex items-center justify-center text-white font-bold text-lg">{user.name[0]}</div>
             </div>
           </div>
         </header>

@@ -1,8 +1,20 @@
 import React from 'react';
 import PlannerCard from '../components/PlannerCard';
 import SectionHeader from '../components/SectionHeader';
+import { useData } from '../contexts/DataContext';
 
 export default function Home() {
+  const { user, tasks, completions, sugarLogs } = useData();
+
+  const today = new Date().toISOString().split('T')[0];
+  const todaysCompletions = completions[today] || [];
+  
+  const todaySugar = sugarLogs.filter(log => log.date === today);
+  const latestSugar = sugarLogs.length > 0 ? sugarLogs[sugarLogs.length - 1] : null;
+
+  const totalTasks = tasks.length;
+  const completedCount = todaysCompletions.length;
+
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       
@@ -22,7 +34,7 @@ export default function Home() {
         <div className="col-span-1 bg-gradient-to-br from-theme-pink to-theme-dark rounded-[2rem] p-6 shadow-md flex flex-col items-center justify-center text-center text-white relative overflow-hidden group">
           <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay"></div>
           <div className="text-4xl mb-2 relative z-10 group-hover:animate-bounce">✨</div>
-          <h3 className="font-bold text-2xl mb-1 relative z-10">3 / 5</h3>
+          <h3 className="font-bold text-2xl mb-1 relative z-10">{completedCount} / {totalTasks}</h3>
           <p className="text-xs text-white/80 font-medium relative z-10 uppercase tracking-widest">Routines</p>
         </div>
 
@@ -40,30 +52,28 @@ export default function Home() {
             </div>
             
             <div className="space-y-4">
-              <div className="flex items-center gap-6 p-4 bg-white/50 rounded-2xl border border-white hover:shadow-sm transition-all group cursor-pointer">
-                <div className="w-16 text-center shrink-0">
-                  <span className="block text-burgundy font-bold">08:00</span>
-                  <span className="text-[10px] text-burgundy/50 font-semibold uppercase">AM</span>
-                </div>
-                <div className="w-1 h-12 bg-theme-light rounded-full group-hover:bg-theme-pink transition-colors"></div>
-                <div className="flex-1">
-                  <h4 className="text-burgundy font-bold text-sm">Morning Skincare & Water</h4>
-                  <p className="text-xs text-burgundy/50 font-medium mt-1">Daily Care Routine</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-6 p-4 bg-white/50 rounded-2xl border border-white hover:shadow-sm transition-all group cursor-pointer">
-                <div className="w-16 text-center shrink-0">
-                  <span className="block text-burgundy font-bold">12:30</span>
-                  <span className="text-[10px] text-burgundy/50 font-semibold uppercase">PM</span>
-                </div>
-                <div className="w-1 h-12 bg-theme-pink rounded-full shadow-[0_0_10px_rgba(238,105,131,0.4)]"></div>
-                <div className="flex-1">
-                  <h4 className="text-burgundy font-bold text-sm">Check Sugar Levels</h4>
-                  <p className="text-xs text-burgundy/50 font-medium mt-1">Pre-Lunch Reading</p>
-                </div>
-                <button className="px-5 py-2 bg-theme-dark text-white text-xs font-bold rounded-xl shadow-sm hover:scale-105 transition-transform">Log Now</button>
-              </div>
+              {tasks.filter(t => !todaysCompletions.includes(t.id)).slice(0, 3).map((task, idx) => {
+                const [hour, min] = task.scheduledTime.split(':');
+                const isAM = parseInt(hour) < 12;
+                const displayHour = isAM ? hour : (parseInt(hour)-12).toString().padStart(2, '0');
+                return (
+                 <div key={task.id} className="flex items-center gap-6 p-4 bg-white/50 rounded-2xl border border-white hover:shadow-sm transition-all group cursor-pointer">
+                  <div className="w-16 text-center shrink-0">
+                    <span className="block text-burgundy font-bold">{displayHour}:{min}</span>
+                    <span className="text-[10px] text-burgundy/50 font-semibold uppercase">{isAM ? 'AM' : 'PM'}</span>
+                  </div>
+                  <div className={`w-1 h-12 ${idx===0 ? 'bg-theme-pink shadow-[0_0_10px_rgba(238,105,131,0.4)]' : 'bg-theme-light group-hover:bg-theme-pink'} rounded-full transition-colors`}></div>
+                  <div className="flex-1">
+                    <h4 className="text-burgundy font-bold text-sm">{task.title}</h4>
+                    <p className="text-xs text-burgundy/50 font-medium mt-1">{task.category} Task</p>
+                  </div>
+                  {idx === 0 && <button className="px-5 py-2 bg-theme-dark text-white text-xs font-bold rounded-xl shadow-sm hover:scale-105 transition-transform">Do Now</button>}
+                 </div>
+                )
+              })}
+              {tasks.length === todaysCompletions.length && (
+                <p className="text-burgundy/60 text-center font-medium py-4">All tasks done for today! 🎉</p>
+              )}
             </div>
           </div>
           
